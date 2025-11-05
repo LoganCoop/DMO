@@ -1,0 +1,48 @@
+@import 'bulma/css/bulma.min.css';
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap');
+
+:root {
+  --fantasy-purple: #6b2d8f;
+  --fantasy-gold: #d4af37;
+  --fantasy-dark: #1a0f2e;
+}
+
+body {
+  background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 50%, #1a0f2e 100%);
+  min-height: 100vh;
+  font-family: 'Georgia', serif;
+}
+
+.title, .subtitle {
+  font-family: 'Cinzel', serif;
+}
+
+.fantasy-card {
+  background: rgba(42, 25, 60, 0.9);
+  border: 2px solid var(--fantasy-gold);
+  box-shadow: 0 8px 32px rgba(212, 175, 55, 0.2);
+}
+
+.fantasy-button {
+  background: linear-gradient(135deg, var(--fantasy-purple), #8b3da6);
+  border: 2px solid var(--fantasy-gold);
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.fantasy-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
