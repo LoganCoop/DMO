@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
 
     // Check if user already exists
     const [existingUsers] = await db.query(
-      'SELECT id FROM users WHERE username = ? OR email = ?',
+      'SELECT id FROM users WHERE username = $1 OR email = $2',
       [username, email]
     );
 
@@ -37,21 +37,23 @@ router.post('/register', async (req, res) => {
 
     // Create user
     const [result] = await db.query(
-      'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
       [username, email, password_hash]
     );
 
+    const userId = result[0].id;
+
     // Generate JWT token
     const token = jwt.sign(
-      { id: result.insertId, username, email },
+      { id: userId, username, email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
     // Get the created user (without password)
     const [newUser] = await db.query(
-      'SELECT id, username, email, created_at FROM users WHERE id = ?',
-      [result.insertId]
+      'SELECT id, username, email, created_at FROM users WHERE id = $1',
+      [userId]
     );
 
     res.status(201).json({
@@ -77,7 +79,7 @@ router.post('/login', async (req, res) => {
 
     // Find user
     const [users] = await db.query(
-      'SELECT * FROM users WHERE username = ? OR email = ?',
+      'SELECT * FROM users WHERE username = $1 OR email = $2',
       [username, username]
     );
 
@@ -130,7 +132,7 @@ router.get('/verify', async (req, res) => {
 
     // Get fresh user data
     const [users] = await db.query(
-      'SELECT id, username, email, created_at FROM users WHERE id = ?',
+      'SELECT id, username, email, created_at FROM users WHERE id = $1',
       [decoded.id]
     );
 
