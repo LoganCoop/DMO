@@ -7,7 +7,7 @@ const { authenticateToken } = require('./auth');
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const [characters] = await db.query(
-      'SELECT * FROM characters WHERE user_id = ? ORDER BY created_at DESC',
+      'SELECT * FROM characters WHERE user_id = $1 ORDER BY created_at DESC',
       [req.user.id]
     );
     res.json(characters);
@@ -20,7 +20,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // Get a specific character by ID
 router.get('/:id', async (req, res) => {
   try {
-    const [characters] = await db.query('SELECT * FROM characters WHERE id = ?', [req.params.id]);
+    const [characters] = await db.query('SELECT * FROM characters WHERE id = $1', [req.params.id]);
     
     if (characters.length === 0) {
       return res.status(404).json({ error: 'Character not found' });
@@ -57,20 +57,20 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Name, race, and class are required' });
     }
 
-    const [result] = await db.query(
+    const result = await db.query(
       `INSERT INTO characters 
       (user_id, name, race, class, level, background, strength, dexterity, constitution, 
        intelligence, wisdom, charisma, hit_points, max_hit_points, armor_class) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
       [req.user.id, name, race, charClass, level || 1, background, 
        strength || 10, dexterity || 10, constitution || 10,
        intelligence || 10, wisdom || 10, charisma || 10,
        hitPoints || 10, hitPoints || 10, armorClass || 10]
     );
 
-    const [newCharacter] = await db.query('SELECT * FROM characters WHERE id = ?', [result.insertId]);
+    const newCharacter = result.rows[0];
     
-    res.status(201).json(newCharacter[0]);
+    res.status(201).json(newCharacter);
   } catch (error) {
     console.error('Error creating character:', error);
     res.status(500).json({ error: 'Failed to create character' });
@@ -93,9 +93,9 @@ router.put('/:id', async (req, res) => {
     const updateFields = [];
     const values = [];
 
-    Object.keys(updates).forEach(key => {
+    Object.keys(updates).forEach((key, index) => {
       if (allowedFields.includes(key)) {
-        updateFields.push(`${key} = ?`);
+        updateFields.push(`${key} = $${values.length + 1}`);
         values.push(updates[key]);
       }
     });
@@ -106,11 +106,11 @@ router.put('/:id', async (req, res) => {
 
     values.push(id);
     await db.query(
-      `UPDATE characters SET ${updateFields.join(', ')} WHERE id = ?`,
+      `UPDATE characters SET ${updateFields.join(', ')} WHERE id = $${values.length}`,
       values
     );
 
-    const [updatedCharacter] = await db.query('SELECT * FROM characters WHERE id = ?', [id]);
+    const [updatedCharacter] = await db.query('SELECT * FROM characters WHERE id = $1', [id]);
     res.json(updatedCharacter[0]);
   } catch (error) {
     console.error('Error updating character:', error);
@@ -121,7 +121,7 @@ router.put('/:id', async (req, res) => {
 // Delete a character
 router.delete('/:id', async (req, res) => {
   try {
-    const [result] = await db.query('DELETE FROM characters WHERE id = ?', [req.params.id]);
+    const [result] = await db.query('DELETE FROM characters WHERE id = $1', [req.params.id]);
     
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Character not found' });

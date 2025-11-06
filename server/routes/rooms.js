@@ -23,13 +23,13 @@ setInterval(async () => {
       FROM rooms r
       LEFT JOIN room_participants rp ON r.id = rp.room_id
       WHERE r.is_active = true 
-        AND r.created_at < ?
+        AND r.created_at < $1
         AND rp.id IS NULL
     `, [thirtyMinutesAgo]);
     
     if (emptyRooms.length > 0) {
       const roomIds = emptyRooms.map(r => r.id);
-      await db.query('UPDATE rooms SET is_active = false WHERE id IN (?)', [roomIds]);
+      await db.query('UPDATE rooms SET is_active = false WHERE id = ANY($1)', [roomIds]);
       console.log(`Auto-closed ${emptyRooms.length} empty rooms:`, emptyRooms.map(r => r.code).join(', '));
     }
   } catch (error) {
@@ -73,7 +73,7 @@ router.get('/code/:code', async (req, res) => {
       SELECT r.*, 
         (SELECT COUNT(*) FROM room_participants WHERE room_id = r.id) as player_count
       FROM rooms r 
-      WHERE r.code = ? AND r.is_active = true
+      WHERE r.code = $1 AND r.is_active = true
     `, [req.params.code.toUpperCase()]);
     
     if (rooms.length === 0) {
@@ -85,7 +85,7 @@ router.get('/code/:code', async (req, res) => {
       SELECT rp.*, c.name as character_name, c.class, c.race, c.level
       FROM room_participants rp
       LEFT JOIN characters c ON rp.character_id = c.id
-      WHERE rp.room_id = ?
+      WHERE rp.room_id = $1
     `, [rooms[0].id]);
     
     res.json({ ...rooms[0], participants });
@@ -102,7 +102,7 @@ router.get('/check/:character_id', async (req, res) => {
       SELECT r.* 
       FROM rooms r
       INNER JOIN room_participants rp ON r.id = rp.room_id
-      WHERE rp.character_id = ? AND r.is_active = true
+      WHERE rp.character_id = $1 AND r.is_active = true
       LIMIT 1
     `, [req.params.character_id]);
     
@@ -120,7 +120,7 @@ router.get('/check/:character_id', async (req, res) => {
 // Get a specific room by ID
 router.get('/:id', async (req, res) => {
   try {
-    const [rooms] = await db.query('SELECT * FROM rooms WHERE id = ?', [req.params.id]);
+    const [rooms] = await db.query('SELECT * FROM rooms WHERE id = $1', [req.params.id]);
     
     if (rooms.length === 0) {
       return res.status(404).json({ error: 'Room not found' });
@@ -131,7 +131,7 @@ router.get('/:id', async (req, res) => {
       SELECT rp.*, c.name as character_name, c.class, c.race, c.level
       FROM room_participants rp
       LEFT JOIN characters c ON rp.character_id = c.id
-      WHERE rp.room_id = ?
+      WHERE rp.room_id = $1
     `, [req.params.id]);
     
     res.json({ ...rooms[0], participants });
@@ -154,20 +154,20 @@ router.post('/', async (req, res) => {
     let code = generateRoomCode();
     let attempts = 0;
     while (attempts < 10) {
-      const [existing] = await db.query('SELECT id FROM rooms WHERE code = ?', [code]);
+      const [existing] = await db.query('SELECT id FROM rooms WHERE code = $1', [code]);
       if (existing.length === 0) break;
       code = generateRoomCode();
       attempts++;
     }
 
-    const [result] = await db.query(
-      'INSERT INTO rooms (code, name, max_players, creator_id) VALUES (?, ?, ?, ?)',
+    const result = await db.query(
+      'INSERT INTO rooms (code, name, max_players, creator_id) VALUES ($1, $2, $3, $4) RETURNING *',
       [code, name, max_players || 6, creator_id || null]
     );
 
-    const [newRoom] = await db.query('SELECT * FROM rooms WHERE id = ?', [result.insertId]);
+    const newRoom = result.rows[0];
     
-    res.status(201).json(newRoom[0]);
+    res.status(201).json(newRoom);
   } catch (error) {
     console.error('Error creating room:', error);
     res.status(500).json({ error: 'Failed to create room' });
@@ -182,14 +182,14 @@ router.post('/:id/kick', async (req, res) => {
 
     // Get total participants
     const [participants] = await db.query(
-      'SELECT COUNT(*) as count FROM room_participants WHERE room_id = ?',
+      'SELECT COUNT(*) as count FROM room_participants WHERE room_id = $1',
       [roomId]
     );
     const totalPlayers = participants[0].count;
     
     // Check if vote already exists
     const [existingVote] = await db.query(
-      'SELECT vote_count FROM kick_votes WHERE room_id = ? AND target_character_id = ?',
+      'SELECT vote_count FROM kick_votes WHERE room_id = $1 AND target_character_id = $2',
       [roomId, character_id]
     );
     
@@ -200,17 +200,17 @@ router.post('/:id/kick', async (req, res) => {
       if (newVoteCount >= votesNeeded) {
         // Kick the player
         await db.query(
-          'DELETE FROM room_participants WHERE room_id = ? AND character_id = ?',
+          'DELETE FROM room_participants WHERE room_id = $1 AND character_id = $2',
           [roomId, character_id]
         );
         await db.query(
-          'DELETE FROM kick_votes WHERE room_id = ? AND target_character_id = ?',
+          'DELETE FROM kick_votes WHERE room_id = $1 AND target_character_id = $2',
           [roomId, character_id]
         );
         res.json({ message: 'Player kicked', kicked: true });
       } else {
         await db.query(
-          'UPDATE kick_votes SET vote_count = ? WHERE room_id = ? AND target_character_id = ?',
+          'UPDATE kick_votes SET vote_count = $1 WHERE room_id = $2 AND target_character_id = $3',
           [newVoteCount, roomId, character_id]
         );
         res.json({ message: 'Vote recorded', votes: newVoteCount, needed: votesNeeded });
@@ -218,7 +218,7 @@ router.post('/:id/kick', async (req, res) => {
     } else {
       // Create new vote
       await db.query(
-        'INSERT INTO kick_votes (room_id, target_character_id, vote_count) VALUES (?, ?, 1)',
+        'INSERT INTO kick_votes (room_id, target_character_id, vote_count) VALUES ($1, $2, 1)',
         [roomId, character_id]
       );
       const votesNeeded = Math.ceil(totalPlayers / 2);
@@ -241,7 +241,7 @@ router.post('/:id/join', async (req, res) => {
     }
 
     // Check if room exists and is active
-    const [rooms] = await db.query('SELECT * FROM rooms WHERE id = ? AND is_active = true', [roomId]);
+    const [rooms] = await db.query('SELECT * FROM rooms WHERE id = $1 AND is_active = true', [roomId]);
     if (rooms.length === 0) {
       return res.status(404).json({ error: 'Room not found or inactive' });
     }
@@ -249,20 +249,20 @@ router.post('/:id/join', async (req, res) => {
     const room = rooms[0];
 
     // Check if room is full
-    const [participants] = await db.query('SELECT COUNT(*) as count FROM room_participants WHERE room_id = ?', [roomId]);
+    const [participants] = await db.query('SELECT COUNT(*) as count FROM room_participants WHERE room_id = $1', [roomId]);
     if (participants[0].count >= room.max_players) {
       return res.status(400).json({ error: 'Room is full' });
     }
 
     // Check if character is already in the room
-    const [existing] = await db.query('SELECT id FROM room_participants WHERE room_id = ? AND character_id = ?', [roomId, character_id]);
+    const [existing] = await db.query('SELECT id FROM room_participants WHERE room_id = $1 AND character_id = $2', [roomId, character_id]);
     if (existing.length > 0) {
       return res.status(400).json({ error: 'Character already in room' });
     }
 
     // Add participant
     await db.query(
-      'INSERT INTO room_participants (room_id, character_id) VALUES (?, ?)',
+      'INSERT INTO room_participants (room_id, character_id) VALUES ($1, $2)',
       [roomId, character_id]
     );
 
@@ -280,7 +280,7 @@ router.post('/:id/leave', async (req, res) => {
     const roomId = req.params.id;
 
     await db.query(
-      'DELETE FROM room_participants WHERE room_id = ? AND character_id = ?',
+      'DELETE FROM room_participants WHERE room_id = $1 AND character_id = $2',
       [roomId, character_id]
     );
 
@@ -298,7 +298,7 @@ router.post('/:id/start', async (req, res) => {
     const roomId = req.params.id;
 
     // Check if user is the creator
-    const [rooms] = await db.query('SELECT * FROM rooms WHERE id = ?', [roomId]);
+    const [rooms] = await db.query('SELECT * FROM rooms WHERE id = $1', [roomId]);
     if (rooms.length === 0) {
       return res.status(404).json({ error: 'Room not found' });
     }
@@ -308,7 +308,7 @@ router.post('/:id/start', async (req, res) => {
     }
 
     // Update room to started
-    await db.query('UPDATE rooms SET is_started = true WHERE id = ?', [roomId]);
+    await db.query('UPDATE rooms SET is_started = true WHERE id = $1', [roomId]);
     res.json({ message: 'Game started successfully' });
   } catch (error) {
     console.error('Error starting game:', error);
@@ -319,7 +319,7 @@ router.post('/:id/start', async (req, res) => {
 // Close/delete a room
 router.delete('/:id', async (req, res) => {
   try {
-    await db.query('UPDATE rooms SET is_active = false WHERE id = ?', [req.params.id]);
+    await db.query('UPDATE rooms SET is_active = false WHERE id = $1', [req.params.id]);
     res.json({ message: 'Room closed successfully' });
   } catch (error) {
     console.error('Error closing room:', error);
