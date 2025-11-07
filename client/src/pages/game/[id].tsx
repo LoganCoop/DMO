@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import io, { Socket } from 'socket.io-client';
 import { isAuthenticated } from '../../utils/auth';
 import Notification from '../../components/Notification';
+import { API_URL, SOCKET_URL } from '../../config/api';
 
 interface Message {
   id: number;
@@ -66,7 +67,7 @@ const GameBoard = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/campaigns/${roomId}/messages`);
+      const response = await fetch(`${API_URL}/api/campaigns/${roomId}/messages`);
       if (response.ok) {
         const data = await response.json();
         setMessages(data);
@@ -81,7 +82,7 @@ const GameBoard = () => {
   }, [messages]);
 
   const connectSocket = () => {
-    const newSocket = io('http://localhost:3001');
+    const newSocket = io(SOCKET_URL);
     
     newSocket.on('connect', () => {
       console.log('Connected to socket');
@@ -130,7 +131,7 @@ const GameBoard = () => {
 
   const fetchRoom = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/${roomId}`);
+      const response = await fetch(`${API_URL}/api/rooms/${roomId}`);
       if (!response.ok) {
         throw new Error('Room not found');
       }
@@ -146,7 +147,7 @@ const GameBoard = () => {
       setRoom(data);
       
       // Find the current user's character in the room
-      const myCharsResponse = await fetch('http://localhost:3001/api/characters', {
+      const myCharsResponse = await fetch(`${API_URL}/api/characters`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -197,7 +198,7 @@ const GameBoard = () => {
     if (messageType === 'action') {
       setDmThinking(true);
       try {
-        const response = await fetch('http://localhost:3001/api/campaigns/dm-action', {
+        const response = await fetch(`${API_URL}/api/campaigns/dm-action`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

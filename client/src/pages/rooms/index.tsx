@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { isAuthenticated, getAuthHeaders } from '../../utils/auth';
 import Notification from '../../components/Notification';
+import { API_URL } from '../../config/api';
 
 const RoomLobby = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const RoomLobby = () => {
 
   const checkForExistingRoom = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/characters', {
+      const response = await fetch(`${API_URL}/api/characters`, {
         headers: getAuthHeaders()
       });
       if (response.ok) {
@@ -32,7 +33,7 @@ const RoomLobby = () => {
         if (characters.length > 0) {
           // Check if any of the user's characters are in an active room
           for (const char of characters) {
-            const roomCheck = await fetch(`http://localhost:3001/api/rooms/check/${char.id}`);
+            const roomCheck = await fetch(`${API_URL}/api/rooms/check/${char.id}`);
             if (roomCheck.ok) {
               const room = await roomCheck.json();
               
@@ -65,7 +66,7 @@ const RoomLobby = () => {
       const payload = token ? JSON.parse(atob(token.split('.')[1])) : null;
       const userId = payload ? (payload.userId || payload.id) : null;
       
-      const response = await fetch('http://localhost:3001/api/rooms', {
+      const response = await fetch(`${API_URL}/api/rooms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ const RoomLobby = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/code/${joinCode.toUpperCase()}`);
+      const response = await fetch(`${API_URL}/api/rooms/code/${joinCode.toUpperCase()}`);
       
       if (!response.ok) {
         throw new Error('Room not found');

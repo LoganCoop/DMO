@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Notification from '../../components/Notification';
+import { API_URL } from '../../config/api';
 
 interface Character {
   id: number;
@@ -46,7 +47,7 @@ const CharacterDetail = () => {
 
   const fetchCharacter = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/characters/${id}`);
+      const response = await fetch(`${API_URL}/api/characters/${id}`);
       if (!response.ok) {
         throw new Error('Character not found');
       }
@@ -65,7 +66,7 @@ const CharacterDetail = () => {
     if (!editedCharacter) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/characters/${id}`, {
+      const response = await fetch(`${API_URL}/api/characters/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +94,7 @@ const CharacterDetail = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/characters/${id}`, {
+      const response = await fetch(`${API_URL}/api/characters/${id}`, {
         method: 'DELETE',
       });
 

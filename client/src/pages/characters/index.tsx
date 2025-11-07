@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { getAuthHeaders, isAuthenticated } from '../../utils/auth';
 import Notification from '../../components/Notification';
+import { API_URL } from '../../config/api';
 
 interface Character {
   id: number;
@@ -40,7 +41,7 @@ const MyCharacters = () => {
 
   const fetchCharacters = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/characters', {
+      const response = await fetch(`${API_URL}/api/characters`, {
         headers: getAuthHeaders()
       });
       if (!response.ok) {
@@ -62,7 +63,7 @@ const MyCharacters = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/characters/${id}`, {
+      const response = await fetch(`${API_URL}/api/characters/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });

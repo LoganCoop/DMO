@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { isAuthenticated, getAuthHeaders } from '../../utils/auth';
 import Notification from '../../components/Notification';
+import { API_URL } from '../../config/api';
 
 interface Character {
   id: number;
@@ -65,7 +66,7 @@ const RoomPage = () => {
 
   const fetchRoom = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/${id}`);
+      const response = await fetch(`${API_URL}/api/rooms/${id}`);
       if (!response.ok) {
         throw new Error('Room not found');
       }
@@ -96,7 +97,7 @@ const RoomPage = () => {
 
   const fetchMyCharacters = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/characters', {
+      const response = await fetch(`${API_URL}/api/characters`, {
         headers: getAuthHeaders()
       });
       if (response.ok) {
@@ -116,7 +117,7 @@ const RoomPage = () => {
 
     setJoining(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/${id}/join`, {
+      const response = await fetch(`${API_URL}/api/rooms/${id}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +141,7 @@ const RoomPage = () => {
 
   const handleLeaveRoom = async (characterId: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/${id}/leave`, {
+      const response = await fetch(`${API_URL}/api/rooms/${id}/leave`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,7 +165,7 @@ const RoomPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/${id}`, {
+      const response = await fetch(`${API_URL}/api/rooms/${id}`, {
         method: 'DELETE',
       });
 
@@ -184,7 +185,7 @@ const RoomPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/${id}/kick`, {
+      const response = await fetch(`${API_URL}/api/rooms/${id}/kick`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,7 +225,7 @@ const RoomPage = () => {
       const payload = token ? JSON.parse(atob(token.split('.')[1])) : null;
       const userId = payload ? (payload.userId || payload.id) : null;
 
-      const response = await fetch(`http://localhost:3001/api/rooms/${id}/start`, {
+      const response = await fetch(`${API_URL}/api/rooms/${id}/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
