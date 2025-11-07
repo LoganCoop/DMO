@@ -37,7 +37,7 @@ git push -u origin main
 
 5. Click "Advanced" → Add Environment Variables:
    ```
-   GOOGLE_API_KEY = AIzaSyBPcxJ21hMSHtZKtXJpd4Rim01eM__S95Y
+   GOOGLE_API_KEY = your_google_api_key_here
    JWT_SECRET = super-secret-change-this-in-production-12345
    PORT = 3001
    CLIENT_URL = https://yourapp.vercel.app

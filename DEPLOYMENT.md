@@ -37,7 +37,7 @@ git push -u origin main
 5. Add Environment Variables:
    - `DATABASE_URL`: (will get from Step 3)
    - `JWT_SECRET`: (generate a random string)
-   - `GOOGLE_API_KEY`: AIzaSyBPcxJ21hMSHtZKtXJpd4Rim01eM__S95Y
+   - `GOOGLE_API_KEY`: your_google_api_key_here
    - `CLIENT_URL`: (will update after frontend deployment)
    - `PORT`: 3001
 
