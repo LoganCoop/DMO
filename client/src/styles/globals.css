@@ -11,6 +11,26 @@ body {
   background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 50%, #1a0f2e 100%);
   min-height: 100vh;
   font-family: 'Georgia', serif;
+  color: #f0f0f0;
+}
+
+input, textarea, select {
+  color: #2d1b4e !important;
+  font-weight: 500;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #666 !important;
+  opacity: 0.8;
+}
+
+label, .label {
+  color: #f0f0f0 !important;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #d4af37 !important;
 }
 
 .title, .subtitle {
