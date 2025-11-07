@@ -1,20 +1,21 @@
 // Script to fix the users table column name
-const { Client } = require('pg');
+const { Pool } = require('pg');
 require('dotenv').config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
 async function fixUsersTable() {
-  const client = new Client({
+  const pool = new Pool({
     connectionString: DATABASE_URL,
     ssl: {
       rejectUnauthorized: false
     }
   });
+  
+  const client = await pool.connect();
 
   try {
     console.log('Connecting to PostgreSQL database...');
-    await client.connect();
     console.log('✓ Connected successfully');
 
     // Check if column exists
@@ -40,7 +41,8 @@ async function fixUsersTable() {
     if (error.code) console.error('Error code:', error.code);
     process.exit(1);
   } finally {
-    await client.end();
+    client.release();
+    await pool.end();
   }
 }
 
