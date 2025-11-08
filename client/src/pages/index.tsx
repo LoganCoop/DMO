@@ -43,10 +43,10 @@ const HomePage = () => {
                 <p className="has-text-white-ter mb-4">
                   Build your hero with our interactive character sheet builder
                 </p>
-                <button className="button fantasy-button has-text-white" disabled>
+                <Link href="/characters" className="button fantasy-button has-text-white">
                   <span className="icon">🔨</span>
-                  <span>Coming Soon</span>
-                </button>
+                  <span>Create Character</span>
+                </Link>
               </div>
             </div>
 
@@ -58,10 +58,10 @@ const HomePage = () => {
                 <p className="has-text-white-ter mb-4">
                   Enter a room code to join your party's adventure
                 </p>
-                <button className="button fantasy-button has-text-white" disabled>
+                <Link href="/rooms" className="button fantasy-button has-text-white">
                   <span className="icon">🚪</span>
-                  <span>Coming Soon</span>
-                </button>
+                  <span>Join Game</span>
+                </Link>
               </div>
             </div>
           </div>
@@ -98,18 +98,15 @@ const HomePage = () => {
           {/* CTA Section */}
           <div className="has-text-centered mt-6">
             <div className="buttons is-centered">
-              <button className="button is-large fantasy-button has-text-white" disabled>
+              <Link href="/auth/register" className="button is-large fantasy-button has-text-white">
                 <span className="icon">🎮</span>
                 <span>Create Account</span>
-              </button>
-              <button className="button is-large is-outlined has-text-white" style={{ borderColor: '#d4af37' }} disabled>
+              </Link>
+              <Link href="/auth/login" className="button is-large is-outlined has-text-white" style={{ borderColor: '#d4af37' }}>
                 <span className="icon">🔑</span>
                 <span>Sign In</span>
-              </button>
+              </Link>
             </div>
-            <p className="has-text-grey-light mt-3">
-              <small>Authentication coming soon</small>
-            </p>
           </div>
         </div>
       </div>
