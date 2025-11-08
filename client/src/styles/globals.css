@@ -14,20 +14,30 @@ body {
   color: #f0f0f0;
 }
 
-/* All text elements should be dark on light backgrounds */
-.box, .card, .panel, .message-body, .modal-content, .notification {
-  color: #1a0f2e !important;
+/* Force all text to be dark and readable */
+* {
+  color: #000000 !important;
 }
 
-/* Headings should stand out */
+/* Background elements keep dark background */
+body, .hero, .section, .navbar {
+  color: #f0f0f0 !important;
+}
+
+/* All text elements should be dark on light backgrounds */
+.box, .box *, .card, .card *, .panel, .panel *, .message-body, .message-body *, .modal-content, .modal-content *, .notification, .notification * {
+  color: #000000 !important;
+}
+
+/* Headings extra dark */
 h1, h2, h3, h4, h5, h6, .title, .subtitle {
-  color: #6b2d8f !important;
+  color: #000000 !important;
   font-weight: 700 !important;
 }
 
 /* Paragraphs and general text in containers */
-.box p, .card p, .content, .message-body p {
-  color: #1a0f2e !important;
+.box p, .card p, .content, .content *, .message-body p, p {
+  color: #000000 !important;
 }
 
 input, textarea, select {
