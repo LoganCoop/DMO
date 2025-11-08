@@ -14,6 +14,22 @@ body {
   color: #f0f0f0;
 }
 
+/* All text elements should be dark on light backgrounds */
+.box, .card, .panel, .message-body, .modal-content, .notification {
+  color: #1a0f2e !important;
+}
+
+/* Headings should stand out */
+h1, h2, h3, h4, h5, h6, .title, .subtitle {
+  color: #6b2d8f !important;
+  font-weight: 700 !important;
+}
+
+/* Paragraphs and general text in containers */
+.box p, .card p, .content, .message-body p {
+  color: #1a0f2e !important;
+}
+
 input, textarea, select {
   color: #2d1b4e !important;
   font-weight: 500;
@@ -29,7 +45,8 @@ label, .label {
   font-weight: 600;
 }
 
-.subtitle {
+/* Override subtitle gold on dark backgrounds only */
+.hero .subtitle, .section > .subtitle {
   color: #d4af37 !important;
 }
 
