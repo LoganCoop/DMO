@@ -57,7 +57,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Name, race, and class are required' });
     }
 
-    const result = await db.query(
+    const [result] = await db.query(
       `INSERT INTO characters 
       (user_id, name, race, class, level, background, strength, dexterity, constitution, 
        intelligence, wisdom, charisma, hit_points, max_hit_points, armor_class) 
@@ -68,7 +68,7 @@ router.post('/', authenticateToken, async (req, res) => {
        hitPoints || 10, hitPoints || 10, armorClass || 10]
     );
 
-    const newCharacter = result.rows[0];
+    const newCharacter = result[0];
     
     res.status(201).json(newCharacter);
   } catch (error) {

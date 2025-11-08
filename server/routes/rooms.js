@@ -160,12 +160,12 @@ router.post('/', async (req, res) => {
       attempts++;
     }
 
-    const result = await db.query(
+    const [result] = await db.query(
       'INSERT INTO rooms (code, name, max_players, creator_id) VALUES ($1, $2, $3, $4) RETURNING *',
       [code, name, max_players || 6, creator_id || null]
     );
 
-    const newRoom = result.rows[0];
+    const newRoom = result[0];
     
     res.status(201).json(newRoom);
   } catch (error) {
