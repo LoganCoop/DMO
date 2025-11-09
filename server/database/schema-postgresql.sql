@@ -17,6 +17,15 @@ CREATE TABLE IF NOT EXISTS characters (
   class VARCHAR(100) NOT NULL,
   level INTEGER DEFAULT 1,
   background TEXT,
+  strength INTEGER DEFAULT 10,
+  dexterity INTEGER DEFAULT 10,
+  constitution INTEGER DEFAULT 10,
+  intelligence INTEGER DEFAULT 10,
+  wisdom INTEGER DEFAULT 10,
+  charisma INTEGER DEFAULT 10,
+  hit_points INTEGER DEFAULT 10,
+  max_hit_points INTEGER DEFAULT 10,
+  armor_class INTEGER DEFAULT 10,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
