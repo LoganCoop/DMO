@@ -198,9 +198,8 @@ const GameBoard = () => {
     if (messageType === 'action') {
       setDmThinking(true);
       try {
-        // Build comprehensive context from recent messages
-        const recentMessages = messages.slice(-10);
-        const contextHistory = recentMessages
+        // Build comprehensive context from ALL messages (not just last 10)
+        const contextHistory = messages
           .filter(m => m.message_type === 'action' || m.message_type === 'dm')
           .map(m => {
             if (m.message_type === 'dm') {
@@ -212,7 +211,7 @@ const GameBoard = () => {
           .join('\n');
 
         const fullContext = contextHistory 
-          ? `Previous events:\n${contextHistory}\n\nCurrent action by ${myCharacter.character_name}:`
+          ? `ADVENTURE HISTORY (maintain consistency with these events):\n${contextHistory}\n\n${myCharacter.character_name}'s new action:`
           : `${myCharacter.character_name}'s action:`;
 
         const response = await fetch(`${API_URL}/api/campaigns/dm-action`, {
