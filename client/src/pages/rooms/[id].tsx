@@ -47,6 +47,7 @@ const RoomPage = () => {
   const [isChecking, setIsChecking] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -55,14 +56,14 @@ const RoomPage = () => {
     }
     setIsChecking(false);
     
-    if (id) {
+    if (id && !isLeaving) {
       fetchRoom();
       fetchMyCharacters();
       // Poll for updates every 2 seconds
       const interval = setInterval(fetchRoom, 2000);
       return () => clearInterval(interval);
     }
-  }, [id]);
+  }, [id, isLeaving]);
 
   const fetchRoom = async () => {
     try {
@@ -140,6 +141,7 @@ const RoomPage = () => {
   };
 
   const handleLeaveRoom = async (characterId: number) => {
+    setIsLeaving(true); // Stop polling
     try {
       const response = await fetch(`${API_URL}/api/rooms/${id}/leave`, {
         method: 'POST',
@@ -150,15 +152,19 @@ const RoomPage = () => {
       });
 
       if (response.ok) {
-        setNotification({ message: 'Left room', type: 'info' });
-        setTimeout(() => router.push('/rooms'), 1500);
+        setNotification({ message: 'Left room successfully', type: 'success' });
+        // Wait a bit to ensure the message is seen, then redirect
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        router.push('/rooms');
       } else {
         const error = await response.json();
         setNotification({ message: error.error || 'Failed to leave room', type: 'danger' });
+        setIsLeaving(false); // Resume polling if failed
       }
     } catch (error: any) {
       console.error('Error leaving room:', error);
       setNotification({ message: error.message || 'Failed to leave room', type: 'danger' });
+      setIsLeaving(false); // Resume polling if failed
     }
   };
 
