@@ -279,10 +279,15 @@ router.post('/:id/leave', async (req, res) => {
     const { character_id } = req.body;
     const roomId = req.params.id;
 
-    await db.query(
+    console.log(`Attempting to remove character ${character_id} from room ${roomId}`);
+
+    const [result] = await db.query(
       'DELETE FROM room_participants WHERE room_id = $1 AND character_id = $2',
       [roomId, character_id]
     );
+
+    console.log(`Delete result:`, result);
+    console.log(`Rows affected: ${result.length}`);
 
     res.json({ message: 'Left room successfully' });
   } catch (error) {
