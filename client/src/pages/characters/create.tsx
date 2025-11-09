@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getAuthHeaders, isAuthenticated } from '../../utils/auth';
 import Notification from '../../components/Notification';
+import { API_URL } from '../../config/api';
 
 interface Character {
   name: string;
@@ -59,7 +60,7 @@ const CharacterCreator = () => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/characters', {
+      const response = await fetch(`${API_URL}/api/characters`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(character),
