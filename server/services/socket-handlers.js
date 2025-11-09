@@ -23,18 +23,12 @@ const handleConnection = (socket, io) => {
     try {
       // Save message to database
       const [result] = await db.query(
-        'INSERT INTO chat_messages (room_id, character_name, message_type, content) VALUES (?, ?, ?, ?)',
+        'INSERT INTO chat_messages (room_id, character_name, message_type, content) VALUES ($1, $2, $3, $4) RETURNING *',
         [room_id, character_name, message_type, content]
       );
 
-      // Get the saved message
-      const [messages] = await db.query(
-        'SELECT * FROM chat_messages WHERE id = ?',
-        [result.insertId]
-      );
-
-      // Broadcast to room
-      io.to(`room-${room_id}`).emit('new-message', messages[0]);
+      // Broadcast the saved message to room
+      io.to(`room-${room_id}`).emit('new-message', result[0]);
     } catch (error) {
       console.error('Error saving message:', error);
     }
