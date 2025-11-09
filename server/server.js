@@ -11,10 +11,36 @@ const helmet = require('helmet');
 
 const app = express();
 const server = http.createServer(app);
+
+// CORS configuration to allow all Vercel deployments
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://dmo-gold.vercel.app',
+  /^https:\/\/dmo-[a-z0-9]+-logan-coopers-projects\.vercel\.app$/
+];
+
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    methods: ["GET", "POST"]
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin matches any allowed pattern
+      const isAllowed = allowedOrigins.some(pattern => {
+        if (typeof pattern === 'string') {
+          return pattern === origin;
+        }
+        return pattern.test(origin);
+      });
+      
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
