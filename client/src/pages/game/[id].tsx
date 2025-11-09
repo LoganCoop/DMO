@@ -296,7 +296,27 @@ const GameBoard = () => {
             <button 
               className="button is-small is-outlined has-text-white"
               style={{ borderColor: '#d4af37' }}
-              onClick={() => router.push(`/rooms/${roomId}`)}
+              onClick={async () => {
+                if (!confirm('Leave the game?')) return;
+                if (!myCharacter) {
+                  router.push('/rooms');
+                  return;
+                }
+                try {
+                  const response = await fetch(`${API_URL}/api/rooms/${roomId}/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ character_id: myCharacter.character_id }),
+                  });
+                  if (response.ok) {
+                    window.location.href = '/rooms';
+                  } else {
+                    alert('Failed to leave room');
+                  }
+                } catch (error) {
+                  alert('Error leaving room');
+                }
+              }}
             >
               Leave
             </button>
