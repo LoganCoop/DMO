@@ -152,10 +152,13 @@ const RoomPage = () => {
       if (response.ok) {
         setNotification({ message: 'Left room', type: 'info' });
         setTimeout(() => router.push('/rooms'), 1500);
+      } else {
+        const error = await response.json();
+        setNotification({ message: error.error || 'Failed to leave room', type: 'danger' });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error leaving room:', error);
-      setNotification({ message: 'Failed to leave room', type: 'danger' });
+      setNotification({ message: error.message || 'Failed to leave room', type: 'danger' });
     }
   };
 
