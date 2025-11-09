@@ -47,7 +47,6 @@ const RoomPage = () => {
   const [isChecking, setIsChecking] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -56,14 +55,14 @@ const RoomPage = () => {
     }
     setIsChecking(false);
     
-    if (id && !isLeaving) {
+    if (id) {
       fetchRoom();
       fetchMyCharacters();
       // Poll for updates every 2 seconds
       const interval = setInterval(fetchRoom, 2000);
       return () => clearInterval(interval);
     }
-  }, [id, isLeaving]);
+  }, [id]);
 
   const fetchRoom = async () => {
     try {
@@ -141,10 +140,11 @@ const RoomPage = () => {
   };
 
   const handleLeaveRoom = async (characterId: number) => {
-    console.log('handleLeaveRoom called with characterId:', characterId);
-    setIsLeaving(true); // Stop polling
+    if (!confirm('Are you sure you want to leave this room?')) {
+      return;
+    }
+
     try {
-      console.log('Sending leave request to:', `${API_URL}/api/rooms/${id}/leave`);
       const response = await fetch(`${API_URL}/api/rooms/${id}/leave`, {
         method: 'POST',
         headers: {
@@ -153,25 +153,15 @@ const RoomPage = () => {
         body: JSON.stringify({ character_id: characterId }),
       });
 
-      console.log('Leave response status:', response.status);
       if (response.ok) {
-        const data = await response.json();
-        console.log('Leave successful:', data);
-        setNotification({ message: 'Left room successfully', type: 'success' });
-        // Wait a bit to ensure the message is seen, then redirect
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Redirecting to /rooms');
-        router.push('/rooms');
+        alert('Left room successfully!');
+        window.location.href = '/rooms';
       } else {
         const error = await response.json();
-        console.error('Leave failed:', error);
-        setNotification({ message: error.error || 'Failed to leave room', type: 'danger' });
-        setIsLeaving(false); // Resume polling if failed
+        alert('Failed to leave: ' + (error.error || 'Unknown error'));
       }
     } catch (error: any) {
-      console.error('Error leaving room:', error);
-      setNotification({ message: error.message || 'Failed to leave room', type: 'danger' });
-      setIsLeaving(false); // Resume polling if failed
+      alert('Error: ' + error.message);
     }
   };
 
