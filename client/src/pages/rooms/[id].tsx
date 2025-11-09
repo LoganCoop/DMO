@@ -335,9 +335,9 @@ const RoomPage = () => {
                 </div>
                 <div className="level-right">
                   <div className="level-item">
-                    {myParticipant && room.participants && room.participants.length >= 1 && (
+                    {isCreator && (
                       <>
-                        {isCreator && (
+                        {myParticipant && room.participants && room.participants.length >= 1 && (
                           <button
                             className={`button is-success mr-2 ${isStarting ? 'is-loading' : ''}`}
                             onClick={handleStartGame}
@@ -348,10 +348,10 @@ const RoomPage = () => {
                           </button>
                         )}
                         <button
-                          className="button is-small is-danger is-outlined"
+                          className="button is-danger"
                           onClick={handleCloseRoom}
                         >
-                          <span className="icon">🚪</span>
+                          <span className="icon">🗑️</span>
                           <span>Close Room</span>
                         </button>
                       </>
