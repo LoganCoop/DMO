@@ -141,8 +141,10 @@ const RoomPage = () => {
   };
 
   const handleLeaveRoom = async (characterId: number) => {
+    console.log('handleLeaveRoom called with characterId:', characterId);
     setIsLeaving(true); // Stop polling
     try {
+      console.log('Sending leave request to:', `${API_URL}/api/rooms/${id}/leave`);
       const response = await fetch(`${API_URL}/api/rooms/${id}/leave`, {
         method: 'POST',
         headers: {
@@ -151,13 +153,18 @@ const RoomPage = () => {
         body: JSON.stringify({ character_id: characterId }),
       });
 
+      console.log('Leave response status:', response.status);
       if (response.ok) {
+        const data = await response.json();
+        console.log('Leave successful:', data);
         setNotification({ message: 'Left room successfully', type: 'success' });
         // Wait a bit to ensure the message is seen, then redirect
         await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Redirecting to /rooms');
         router.push('/rooms');
       } else {
         const error = await response.json();
+        console.error('Leave failed:', error);
         setNotification({ message: error.error || 'Failed to leave room', type: 'danger' });
         setIsLeaving(false); // Resume polling if failed
       }
